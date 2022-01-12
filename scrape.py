@@ -81,7 +81,8 @@ def scrape(irnis):
     except:
         data['Document Date'] = ''
         data['Document Title'] = ''
-
+    data['Offc Action Date'] = ''
+    data['SUMMARY OF ISSUES'] = ''
     try:
         index = text.index('Offc Action Outgoing')
         data['Offc Action Date'] = text[index-1]
@@ -112,4 +113,4 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79306207'))
+    print(scrape('90371035'))
