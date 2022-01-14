@@ -86,34 +86,28 @@ def scrape(irnis):
     data['Offc Action Date'] = ''
     data['SUMMARY OF ISSUES'] = ''
     try:
-        docId = -1
-        elements = html.find('tr.doc_row.dataRowTR')
-        for element in elements:
-            if element.text.find('Offc Action Outgoing') != -1:
-                docId = element.text.split('\n')[-1]
-                data['Offc Action Date'] = element.text.split('\n')[0]
+        index = text.index('Offc Action Outgoing')
+        data['Offc Action Date'] = text[index - 1]
+        docId = text[index + 2]        
+        url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
+        html = session.get(url)
+        html = html.html
+        text = html.text.split('\n')
+        index1 = -1
+        for i in text:
+            if i.find('SUMMARY OF ISSUES') != -1:
+                index1 = text.index(i)
                 break
-
-        if docId != -1:
-            url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
-            html = session.get(url)
-            html = html.html
-            text = html.text.split('\n')
-            index1 = -1
-            for i in text:
-                if i.find('SUMMARY OF ISSUES') != -1:
-                    index1 = text.index(i)
-                    break
-            index2 = index1+4
-            if index1 != -1:
-                try:
-                    index2 = text.index('Substitute Specimen Requirement')
-                except:
-                    for i in text[index1+1:]:
-                        if i.isupper():  # If Following is Capital String:
-                            index2 = text.index(i)
-                            break
-                data['SUMMARY OF ISSUES'] = '\n'.join(text[index1+1: index2])
+        index2 = index1+4
+        if index1 != -1:
+            try:
+                index2 = text.index('Substitute Specimen Requirement')
+            except:
+                for i in text[index1+1:]:
+                    if i.isupper():  # If Following is Capital String:
+                        index2 = text.index(i)
+                        break
+            data['SUMMARY OF ISSUES'] = '\n'.join(text[index1+1: index2])
 
     except:
         data['SUMMARY OF ISSUES'] = ''
