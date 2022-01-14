@@ -71,6 +71,10 @@ def scrape(irnis):
     # FETCHING DOCUMENTS RELATED DETAILS
     html = session.get(docs_url)
     html = html.html
+    
+            
+            
+        
     links = html.links
     text = html.text.split('\n')
     try:
@@ -84,28 +88,32 @@ def scrape(irnis):
     data['Offc Action Date'] = ''
     data['SUMMARY OF ISSUES'] = ''
     try:
-        index = text.index('Offc Action Outgoing')
-        data['Offc Action Date'] = text[index-1]
-        docId = text[index+2]
-        url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
-        html = session.get(url)
-        html = html.html
-        text = html.text.split('\n')
-        index1 = -1
-        for i in text:
-            if i.find('SUMMARY OF ISSUES') != -1:
-                index1 = text.index(i)
-                break
-        index2 = index1+4
-        if index1 != -1:
-            for i in text[index1+1:]:
-                if i.isupper():  # If Following is Capital String:
-                    index2 = text.index(i)
+        docId = -1
+        elements = html.find('tr.doc_row.dataRowTR')
+        for element in elements:
+            if element.text.find('Offc Action Outgoing') != -1:
+                docId = element.text.split('\n')[-1]
+                data['Offc Action Date'] = element.text.split('\n')[0]
+        if docId != -1:
+            url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
+            html = session.get(url)
+            html = html.html
+            text = html.text.split('\n')
+            index1 = -1
+            for i in text:
+                if i.find('SUMMARY OF ISSUES') != -1:
+                    index1 = text.index(i)
                     break
-
-            data['SUMMARY OF ISSUES'] = '\n'.join(text[index1+1: index2])
-        else:
-            data['SUMMARY OF ISSUES'] = ''
+            index2 = index1+4
+            if index1 != -1:
+                try:
+                    index2 = text.index('Substitute Specimen Requirement')
+                except:
+                    for i in text[index1+1:]:
+                        if i.isupper():  # If Following is Capital String:
+                            index2 = text.index(i)
+                            break
+                data['SUMMARY OF ISSUES'] = '\n'.join(text[index1+1: index2])
 
     except:
         data['SUMMARY OF ISSUES'] = ''
@@ -113,4 +121,4 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90371035'))
+    print(scrape('90371235'))
