@@ -11,6 +11,8 @@ def find(text, element):
 
 def scrape(irnis):
     session = HTMLSession()
+    headers = {
+        "User-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36 OPR/67.0.3575.137"}
     data = {}
     status_url = f'https://tsdr.uspto.gov/statusview/sn{irnis}'
     docs_url = f'https://tsdr.uspto.gov/docsview/sn{irnis}'
@@ -69,12 +71,8 @@ def scrape(irnis):
     # END OF FETCHING STATUS RELATED DETAILS:
 
     # FETCHING DOCUMENTS RELATED DETAILS
-    html = session.get(docs_url)
+    html = session.get(docs_url, headers=headers)
     html = html.html
-    
-            
-            
-        
     links = html.links
     text = html.text.split('\n')
     try:
@@ -94,6 +92,8 @@ def scrape(irnis):
             if element.text.find('Offc Action Outgoing') != -1:
                 docId = element.text.split('\n')[-1]
                 data['Offc Action Date'] = element.text.split('\n')[0]
+                break
+
         if docId != -1:
             url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
             html = session.get(url)
@@ -121,4 +121,4 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90371235'))
+    print(scrape('76709358'))
