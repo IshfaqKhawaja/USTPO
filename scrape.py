@@ -64,7 +64,7 @@ def scrape(irnis):
             temp = temp.split('\n')
             if len(temp) > 1:
                 data[temp[0]] = temp[1]
-                
+
     # Mark Information Done:
 
     # Finding Goods and Service Details
@@ -77,8 +77,8 @@ def scrape(irnis):
         data['International Class(es)'] = temp[index-1]
     except:
         data['International Class(es)'] = ''
-    #Owner Information
-    ownerInfo  = html.find('div#relatedProp-section')    
+    # Owner Information
+    ownerInfo = html.find('div#relatedProp-section')
     data['Owner Name'] = ''
     data['Legal Entity Type'] = ''
     data['Owner Address'] = ''
@@ -91,14 +91,14 @@ def scrape(irnis):
         if temp.find('Owner Address:') != -1:
             data['Owner Address'] = '\n'.join(temp.split('\n')[1:])
             continue
-       
+
     elements = ownerInfo[0].find('div.double.table')
     for i in elements:
         temp = i.text
         if temp.find('Legal Entity Type:') != -1:
             data['Legal Entity Type'] = temp.split('\n')[1]
             break
-    #Finding Email and Phone Number:
+    # Finding Email and Phone Number:
     sections = html.find('div.expand_wrapper.default_hide')
     index = -1
     for i in range(len(sections)):
@@ -108,21 +108,21 @@ def scrape(irnis):
     correspondence = sections[i]
     data['Correspondent Name/Address'] = ''
     data['Phone No'] = ''
-    info  = correspondence.find('div.single.table')
+    info = correspondence.find('div.single.table')
     for i in info:
         temp = i.text
         if temp.find('Correspondent Name/Address:') != -1:
-            data['Correspondent Name/Address'] = '\n'.join(temp.split('\n')[1:])
+            data['Correspondent Name/Address'] = '\n'.join(
+                temp.split('\n')[1:])
             break
-    info  = correspondence.find('div.double.table')
+    info = correspondence.find('div.double.table')
     for i in info:
-        temp = i.text           
+        temp = i.text
         if temp.find('Phone:') != -1:
             data['Phone No'] = ''.join(temp.split('\n')[1])
-            
-    
+
     # END OF FETCHING STATUS RELATED DETAILS:
-    
+
     # FETCHING DOCUMENTS RELATED DETAILS
     html = session.get(docs_url, headers=headers)
     html = html.html
@@ -131,7 +131,15 @@ def scrape(irnis):
     data['Document Date'] = ''
     data['Document Title'] = ''
     data['Office  Action Date '] = ''
-    docId = -1 
+
+    # Finding Office Action Date:
+    sections = html.find('tr.doc_row.dataRowTR')
+    for i in sections:
+        temp = i.text.split('\n')
+        data['Document Date'] = temp[0]
+        data['Document Title'] = temp[1]
+        break
+    docId = -1
     for i in range(len(text)):
         if text[i].find('Offc Action Outgoing') != -1:
             data['Office  Action Date '] = text[i-1]
@@ -144,20 +152,20 @@ def scrape(irnis):
         html = html.html
         elements = html.find('p.MsoNormal')
         for i in range(len(elements)):
-            if elements[i].text.find('SUMMARY OF ISSUES:') != -1:
+            if elements[i].text.find('SUMMARY OF ISSUES') != -1:
                 t = ''
-                ol = html.find('ol', first = True)
+                ol = html.find('ol', first=True)
                 if ol is not None:
                     t = ol.text
                 else:
-                    ul = html.find('ul', first =True)
+                    ul = html.find('ul', first=True)
                     if ul is not None:
                         t = ul.text
                 data['SUMMARY OF ISSUES'] = '\n'.join(t.split('\n'))
-                break    
-   
+                break
+
     return data
 
 
 if __name__ == '__main__':
-    print(scrape('79326145'))
+    print(scrape('79324622'))
