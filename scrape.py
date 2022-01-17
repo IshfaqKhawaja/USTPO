@@ -21,7 +21,12 @@ def scrape(irnis):
     html = html.html
     text = html.text.split('\n')
     # Finding Mark
-    data['Mark'] = find(text, 'Mark:')
+    mark = find(text, 'Mark:')
+    if mark != 'US Serial Number:':
+        data['Mark'] = mark
+    else:
+        data["Mark"] = ''
+
     # Finding US Serial Number:
     data['US Serial Number'] = find(text, 'US Serial Number:')
     # Finding Application Filing Date
@@ -88,7 +93,7 @@ def scrape(irnis):
     try:
         index = text.index('Offc Action Outgoing')
         data['Offc Action Date'] = text[index - 1]
-        docId = text[index + 2]        
+        docId = text[index + 2]
         url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
         html = session.get(url)
         html = html.html
@@ -115,4 +120,4 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90371235'))
+    print(scrape('79283985'))
