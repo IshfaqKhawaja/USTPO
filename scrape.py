@@ -92,6 +92,7 @@ def scrape(irnis):
     data['Owner Name'] = ''
     data['Legal Entity Type'] = ''
     data['Owner Address'] = ''
+    
     elements = ownerInfo[0].find('div.single.table')
     for i in elements:
         temp = i.text
@@ -118,6 +119,7 @@ def scrape(irnis):
     correspondence = sections[i]
     data['Correspondent Name/Address'] = ''
     data['Phone No'] = ''
+    data['Email'] = ''
     info = correspondence.find('div.single.table')
     for i in info:
         temp = i.text
@@ -130,6 +132,8 @@ def scrape(irnis):
         temp = i.text
         if temp.find('Phone:') != -1:
             data['Phone No'] = ''.join(temp.split('\n')[1])
+        if temp.find('Correspondent e-mail:') != -1:
+            data['Email'] = ''.join(temp.split('\n')[1])
 
     # END OF FETCHING STATUS RELATED DETAILS:
 
@@ -178,4 +182,4 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79324622'))
+    print(scrape('90396392'))
