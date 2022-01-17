@@ -53,17 +53,27 @@ def scrape(irnis):
             if len(temp) > 1:
                 data['Mark Type'] = temp[1]
                 break
+    # Finding TM5
+    data['TM5 Common Status Descriptor'] = ''
+    Tm5 = summarySection[0].find('div.double.table')
+    for i in Tm5:
+        temp = i.text
+        if temp.find('TM5 Common Status Descriptor') != -1:
+            data['TM5 Common Status Descriptor'] = '\n'.join(
+                i.text.split('\n')[1:])
+            break
+
     # Finding Status Date :
     status_date = summarySection[0].find('div.row')
-    data['Status Date:'] = ''
-    data['Publication Date:'] = ''
-    data['Date Abandoned:'] = ''
+    data['Status Date'] = ''
+    data['Publication Date'] = ''
+    data['Date Abandoned'] = ''
     for i in range(len(status_date)):
         temp = status_date[i].text.strip('\n')
         if temp.find('Date') != -1 and temp.find('Application Filing Date:') == -1:
             temp = temp.split('\n')
             if len(temp) > 1:
-                data[temp[0]] = temp[1]
+                data[temp[0].replace(':', '')] = temp[1]
 
     # Mark Information Done:
 
