@@ -92,7 +92,7 @@ def scrape(irnis):
     data['Owner Name'] = ''
     data['Legal Entity Type'] = ''
     data['Owner Address'] = ''
-    
+
     elements = ownerInfo[0].find('div.single.table')
     for i in elements:
         temp = i.text
@@ -148,17 +148,33 @@ def scrape(irnis):
 
     # Finding Office Action Date:
     sections = html.find('tr.doc_row.dataRowTR')
+    docs = []
+    prevId = sections[0].text.split('\n')[-1]
     for i in sections:
         temp = i.text.split('\n')
-        data['Document Date'] = temp[0]
-        data['Document Title'] = temp[1]
-        break
+        if temp[-1] == prevId:
+            docs.append(temp)
+        else:
+            break
+    docs.sort(key=lambda x: x[1])
+    data['Document Date'] = docs[0][0]
+    data['Document Title'] = docs[0][1]
     docId = -1
+    # Finding First Off Action Outgoing
+    docs = []
+    j = 0
+    prev = []
+    text = '\n'.join([i.text for i in sections]).split('\n')
     for i in range(len(text)):
         if text[i].find('Offc Action Outgoing') != -1:
-            data['Office  Action Date '] = text[i-1]
-            docId = text[i+2]
-            break
+            if j == 0:
+                j += 1
+                prev = [text[i-1], text[i], text[i+2]]
+            docs.append([text[i-1], text[i], text[i+2]])
+
+    sameDocs = [i for i in docs if i[0] == prev[0]]
+    data['Office  Action Date '] = sameDocs[-1][0]
+    docId = sameDocs[-1][-1]
     data['SUMMARY OF ISSUES'] = ''
     if docId != -1:
         url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
@@ -182,4 +198,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90396392'))
+    print(scrape('79326145'))
+# 76709358
