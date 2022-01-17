@@ -21,24 +21,54 @@ def scrape(irnis):
     html = html.html
     text = html.text.split('\n')
     # Finding Mark
-    mark = find(text, 'Mark:')
-    if mark != 'US Serial Number:':
-        data['Mark'] = mark
-    else:
-        data["Mark"] = ''
+    summarySection = html.find('div#sumary-section')
 
-    # Finding US Serial Number:
-    data['US Serial Number'] = find(text, 'US Serial Number:')
-    # Finding Application Filing Date
-    data['Application Filing Date'] = find(text, 'Application Filing Date:')
-    data['Mark Type'] = find(text, 'Mark Type:')
-    data['TM5 Common Status Descriptor'] = find(
-        text, 'TM5 Common Status Descriptor:')
-    data['TM5 Common Status Descriptor'] += '.' + \
-        find(text, data['TM5 Common Status Descriptor'])
-    data['Status Date'] = find(text, 'Status Date:')
-    data['Publication Date'] = find(text, 'Publication Date:')
-    data['Date Abandoned'] = find(text, 'Date Abandoned:')
+    # Finding Mark
+    data['Mark'] = ''
+    mark = summarySection[0].find('div.value.markText')
+    if len(mark) > 0:
+        data['Mark'] = mark[0].text
+    else:
+        data['Mark'] = ''
+    # Finding Us Serial Number
+    us_serial_number = summarySection[0].find('div.double.table')
+    data['US Serial Number'] = ''
+    data['Application Filing Date'] = ''
+    if len(us_serial_number) > 0:
+        element = us_serial_number[0].find('div.value')
+        if len(element) > 0:
+            data['US Serial Number'] = element[0].text
+            data['Application Filing Date'] = element[1].text
+        else:
+            data['US Serial Number'] = ''
+            data['Application Filing Date'] = ''
+    # Finding Mark Type:
+    mark_type = summarySection[0].find('div.row')
+    data['Mark Type'] = ''
+    for i in range(len(mark_type)):
+        temp = mark_type[i].text.strip('\n')
+
+        if temp.find('Mark Type:') != -1:
+            temp = temp.split('\n')
+            if len(temp) > 1:
+                data['Mark Type'] = temp[1]
+                break
+    # Finding Status Date :
+    status_date = summarySection[0].find('div.row')
+    data['Status Date:'] = ''
+    data['Publication Date:'] = ''
+    data['Date Abandoned:'] = ''
+    for i in range(len(status_date)):
+        temp = status_date[i].text.strip('\n')
+        if temp.find('Date') != -1 and temp.find('Application Filing Date:') == -1:
+            temp = temp.split('\n')
+            if len(temp) > 1:
+                data[temp[0]] = temp[1]
+                
+    # Mark Information Done:
+
+    # Finding Goods and Service Details
+    data['International Class(es)'] = ''
     try:
         temp = text.copy()
         temp.reverse()
@@ -47,77 +77,87 @@ def scrape(irnis):
         data['International Class(es)'] = temp[index-1]
     except:
         data['International Class(es)'] = ''
-    data['Owner Name'] = find(text, 'Owner Name:')
-    data['Legal Entity Type'] = find(text, 'Legal Entity Type:')
-
-    # Correspodent Name and Address:
-    try:
-        try:
-            index2 = text.index('Phone:')
-        except:
-            index2 = text.index('Domestic Representative - Not Found')
-        finally:
-            index2 = -1
-        try:
-            index1 = text.index('Correspondent Name/Address:')
-            if index2 == -1:
-                data['Correspondent Name/Address'] = ' '.join(
-                    text[index1+1:index1+4])
-            else:
-                data['Correspondent Name/Address'] = ' '.join(
-                    text[index1+1:index2])
-        except:
-            data['Correspondent Name/Address'] = ''
-    except:
-        data['Correspondent Name/Address'] = ''
-    data['Phone'] = find(text, 'Phone:')
-    data['Correspondent e-mail'] = find(text, 'Correspondent e-mail:')
-
+    #Owner Information
+    ownerInfo  = html.find('div#relatedProp-section')    
+    data['Owner Name'] = ''
+    data['Legal Entity Type'] = ''
+    data['Owner Address'] = ''
+    elements = ownerInfo[0].find('div.single.table')
+    for i in elements:
+        temp = i.text
+        if temp.find('Owner Name:') != -1:
+            data['Owner Name'] = ' '.join(temp.split('\n')[1:])
+            continue
+        if temp.find('Owner Address:') != -1:
+            data['Owner Address'] = '\n'.join(temp.split('\n')[1:])
+            continue
+       
+    elements = ownerInfo[0].find('div.double.table')
+    for i in elements:
+        temp = i.text
+        if temp.find('Legal Entity Type:') != -1:
+            data['Legal Entity Type'] = temp.split('\n')[1]
+            break
+    #Finding Email and Phone Number:
+    sections = html.find('div.expand_wrapper.default_hide')
+    index = -1
+    for i in range(len(sections)):
+        if sections[i].text.find('Attorney/Correspondence Information') != -1:
+            index = i
+            break
+    correspondence = sections[i]
+    data['Correspondent Name/Address'] = ''
+    data['Phone No'] = ''
+    info  = correspondence.find('div.single.table')
+    for i in info:
+        temp = i.text
+        if temp.find('Correspondent Name/Address:') != -1:
+            data['Correspondent Name/Address'] = '\n'.join(temp.split('\n')[1:])
+            break
+    info  = correspondence.find('div.double.table')
+    for i in info:
+        temp = i.text           
+        if temp.find('Phone:') != -1:
+            data['Phone No'] = ''.join(temp.split('\n')[1])
+            
+    
     # END OF FETCHING STATUS RELATED DETAILS:
-
+    
     # FETCHING DOCUMENTS RELATED DETAILS
     html = session.get(docs_url, headers=headers)
     html = html.html
-    links = html.links
-    text = html.text.split('\n')
-    try:
-        index = text.index('Document Type')
-        data['Document Date'] = text[index+2]
-        data['Document Title'] = text[index+3]
-
-    except:
-        data['Document Date'] = ''
-        data['Document Title'] = ''
-    data['Offc Action Date'] = ''
+    summary = html.find('div#docs_data_container')
+    text = summary[0].text.split('\n')
+    data['Document Date'] = ''
+    data['Document Title'] = ''
+    data['Office  Action Date '] = ''
+    docId = -1 
+    for i in range(len(text)):
+        if text[i].find('Offc Action Outgoing') != -1:
+            data['Office  Action Date '] = text[i-1]
+            docId = text[i+2]
+            break
     data['SUMMARY OF ISSUES'] = ''
-    try:
-        index = text.index('Offc Action Outgoing')
-        data['Offc Action Date'] = text[index - 1]
-        docId = text[index + 2]
+    if docId != -1:
         url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
         html = session.get(url)
         html = html.html
-        text = html.text.split('\n')
-        index1 = -1
-        for i in text:
-            if i.find('SUMMARY OF ISSUES') != -1:
-                index1 = text.index(i)
-                break
-        index2 = index1+4
-        if index1 != -1:
-            try:
-                index2 = text.index('Substitute Specimen Requirement')
-            except:
-                for i in text[index1+1:]:
-                    if i.isupper():  # If Following is Capital String:
-                        index2 = text.index(i)
-                        break
-            data['SUMMARY OF ISSUES'] = '\n'.join(text[index1+1: index2])
-
-    except:
-        data['SUMMARY OF ISSUES'] = ''
+        elements = html.find('p.MsoNormal')
+        for i in range(len(elements)):
+            if elements[i].text.find('SUMMARY OF ISSUES:') != -1:
+                t = ''
+                ol = html.find('ol', first = True)
+                if ol is not None:
+                    t = ol.text
+                else:
+                    ul = html.find('ul', first =True)
+                    if ul is not None:
+                        t = ul.text
+                data['SUMMARY OF ISSUES'] = '\n'.join(t.split('\n'))
+                break    
+   
     return data
 
 
 if __name__ == '__main__':
-    print(scrape('79283985'))
+    print(scrape('79326145'))
