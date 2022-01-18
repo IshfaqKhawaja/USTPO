@@ -152,13 +152,16 @@ def scrape(irnis):
     # Finding First Document
     text = '\n'.join([i.text for i in sections]).split('\n')
     prevId = text[3]
-    for i in range(len(text)):
+    allDocs = []
+    for i in range(0, len(text), 4):
+        allDocs.append(text[i:i+4])
         if text[i] == prevId:
             docs.append([text[i-3], text[i-2]])
-    if len(docs) > 0:
-        data['Document Date'] = docs[-1][0]
-        data['Document Title'] = docs[-1][1]
-    # Finding First Off Action Outgoing
+    data['All Documents'] = allDocs
+    # if len(docs) > 0:
+    #     data['Document Date'] = docs[-1][0]
+    #     data['Document Title'] = docs[-1][1]
+    # # Finding First Off Action Outgoing
     docs = []
     j = 0
     prev = []
