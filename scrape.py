@@ -149,13 +149,14 @@ def scrape(irnis):
     # Finding Office Action Date:
     sections = html.find('tr.doc_row.dataRowTR')
     docs = []
+    tbody = html.find('tbody#docResultsTbody')
     # Finding First Document
-    text = '\n'.join([i.text for i in sections]).split('\n')
+    text = '\n'.join([i.text for i in tbody]).split('\n')
     prevId = text[3]
     allDocs = []
     for i in range(0, len(text), 4):
         temp = ''.join(text[i:i+4])
-        if temp.find("Proceedings Documents") != -1 or temp.find("Assignments Documents") != -1 or temp.find("Click to Load") != -1:
+        if temp.find("Click to Load") != -1:
             pass
         else:
             allDocs.append(text[i: i+4])
@@ -206,5 +207,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79322750'))
+    print(scrape('79326145'))
 # 76709358
