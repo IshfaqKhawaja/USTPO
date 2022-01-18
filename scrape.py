@@ -152,7 +152,8 @@ def scrape(irnis):
     tbody = html.find('tbody#docResultsTbody')
     # Finding First Document
     text = '\n'.join([i.text for i in tbody]).split('\n')
-    prevId = text[3]
+    prevId = text[0]
+    # print(prevId)
     allDocs = []
     for i in range(0, len(text), 4):
         temp = ''.join(text[i:i+4])
@@ -161,11 +162,11 @@ def scrape(irnis):
         else:
             allDocs.append(text[i: i+4])
         if text[i] == prevId:
-            docs.append([text[i-3], text[i-2]])
-    data['All Documents'] = allDocs
-    # if len(docs) > 0:
-    #     data['Document Date'] = docs[-1][0]
-    #     data['Document Title'] = docs[-1][1]
+            docs.append([text[i], text[i+1]])
+    # data['All Documents'] = allDocs
+    if len(docs) > 0:
+        data['Document Date'] = docs[-1][0]
+        data['Document Title'] = docs[-1][1]
     # # Finding First Off Action Outgoing
     docs = []
     j = 0
@@ -207,5 +208,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79326145'))
+    print(scrape('90344048'))
 # 76709358
