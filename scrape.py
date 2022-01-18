@@ -140,50 +140,21 @@ def scrape(irnis):
     # FETCHING DOCUMENTS RELATED DETAILS
     html = session.get(docs_url, headers=headers)
     html = html.html
-    summary = html.find('div#docs_data_container')
-    text = summary[0].text.split('\n')
     data['Document Date'] = ''
     data['Document Title'] = ''
     data['Office  Action Date '] = ''
-
-    # Finding Office Action Date:
-    sections = html.find('tr.doc_row.dataRowTR')
-    docs = []
     tbody = html.find('tbody#docResultsTbody')
-    # Finding First Document
-    text = '\n'.join([i.text for i in tbody]).split('\n')
-    date = text[0]
+    trs = tbody[0].find('tr.doc_row.dataRowTR')
     docs = []
-    for i in range(len(text)):
-        if text[i] == date:
-            docs.append(text[i:i+4])
-    docs.sort(key=lambda x: int(x[-1]), reverse=True)
-    # print(docs)
-    data['Document Date'] = docs[0][0]
-    data['Document Title'] = docs[0][1]
+    for i in trs:
+        temp = i.text.split('\n')
+        docs.append(temp)
+    docs.sort(key=lambda x: int(x[-1]))
+    data['Document Date'] = docs[-1][0]
+    data['Document Title'] = docs[-1][1]
 
-    # links = html.links
-    # docId = -1
-    # for i in links:
-    #     print(i)
-    #     if i.find('docId=OOA') != -1:
-    #         docId = i[-14:]
-    # print(docId)
-    # if docId != -1:
-
-    #     url = f'https://tsdr.uspto.gov/documentviewer?caseId=sn{irnis}&docId=OOA{docId}#docIndex=0&page=1'
-    #     html = session.get(url, headers=headers)
-    #     html = html.html
-    #     #    Finding Document Date and Title:
-    #     t = html.text
-    #     DocList = t.split('\n')[1]
-    #     index = DocList.find('"caseDocs')
-    #     documents = DocList[index+11:]
-    #     documents = documents.split('{')
-    #     documents = documents[1].split(':')
-    #     data['Document Date'] = documents[4].split(',')[0]
-    #     data['Document Title'] = documents[3].split(',')[0]
     # # Finding First Off Action Outgoing
+    sections = html.find('tr.doc_row.dataRowTR')
     docs = []
     j = 0
     prev = []
@@ -228,5 +199,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79326145'))
+    print(scrape('90704301'))
 # 76709358
