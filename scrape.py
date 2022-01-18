@@ -154,7 +154,11 @@ def scrape(irnis):
     prevId = text[3]
     allDocs = []
     for i in range(0, len(text), 4):
-        allDocs.append(text[i:i+4])
+        temp = ''.join(text[i:i+4])
+        if temp.find("Proceedings Documents") != -1 or temp.find("Assignments Documents") != -1 or temp.find("Click to Load") != -1:
+            pass
+        else:
+            allDocs.append(text[i: i+4])
         if text[i] == prevId:
             docs.append([text[i-3], text[i-2]])
     data['All Documents'] = allDocs
@@ -202,5 +206,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('76709358'))
+    print(scrape('79322750'))
 # 76709358
