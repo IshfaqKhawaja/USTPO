@@ -152,21 +152,37 @@ def scrape(irnis):
     tbody = html.find('tbody#docResultsTbody')
     # Finding First Document
     text = '\n'.join([i.text for i in tbody]).split('\n')
-    prevId = text[0]
-    # print(prevId)
-    allDocs = []
-    for i in range(0, len(text), 4):
-        temp = ''.join(text[i:i+4])
-        if temp.find("Click to Load") != -1:
-            pass
-        else:
-            allDocs.append(text[i: i+4])
-        if text[i] == prevId:
-            docs.append([text[i], text[i+1]])
-    # data['All Documents'] = allDocs
-    if len(docs) > 0:
-        data['Document Date'] = docs[-1][0]
-        data['Document Title'] = docs[-1][1]
+    date = text[0]
+    docs = []
+    for i in range(len(text)):
+        if text[i] == date:
+            docs.append(text[i:i+4])
+    docs.sort(key=lambda x: int(x[-1]), reverse=True)
+    # print(docs)
+    data['Document Date'] = docs[0][0]
+    data['Document Title'] = docs[0][1]
+
+    # links = html.links
+    # docId = -1
+    # for i in links:
+    #     print(i)
+    #     if i.find('docId=OOA') != -1:
+    #         docId = i[-14:]
+    # print(docId)
+    # if docId != -1:
+
+    #     url = f'https://tsdr.uspto.gov/documentviewer?caseId=sn{irnis}&docId=OOA{docId}#docIndex=0&page=1'
+    #     html = session.get(url, headers=headers)
+    #     html = html.html
+    #     #    Finding Document Date and Title:
+    #     t = html.text
+    #     DocList = t.split('\n')[1]
+    #     index = DocList.find('"caseDocs')
+    #     documents = DocList[index+11:]
+    #     documents = documents.split('{')
+    #     documents = documents[1].split(':')
+    #     data['Document Date'] = documents[4].split(',')[0]
+    #     data['Document Title'] = documents[3].split(',')[0]
     # # Finding First Off Action Outgoing
     docs = []
     j = 0
@@ -186,10 +202,14 @@ def scrape(irnis):
         data['Office  Action Date '] = sameDocs[-1][0]
         docId = sameDocs[-1][-1]
     data['SUMMARY OF ISSUES'] = ''
+
+    # print(documents)
+
     if docId != -1:
         url = f'https://tsdrsec.uspto.gov/ts/cd/casedoc/sn{irnis}/OOA{docId}/1/webcontent?scale=1'
-        html = session.get(url)
+        html = session.get(url, headers=headers)
         html = html.html
+        # Finding Summary of Issues:
         elements = html.find('p.MsoNormal')
         for i in range(len(elements)):
             if elements[i].text.find('SUMMARY OF ISSUES') != -1:
@@ -208,5 +228,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90344048'))
+    print(scrape('79326145'))
 # 76709358
