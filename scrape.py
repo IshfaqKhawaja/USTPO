@@ -153,7 +153,13 @@ def scrape(irnis):
     data['Document Date'] = docs[-1][0]
     data['Document Title'] = docs[-1][1]
 
+    # Targeting xPath
+    tbody = html.find('tbody#docResultsTbody')
+    td = tbody[0].xpath('//*[@id="docResultsTbody"]/tr[1]/td[3]')
+    print(td[0].text)
+
     # # Finding First Off Action Outgoing
+
     sections = html.find('tr.doc_row.dataRowTR')
     docs = []
     j = 0
@@ -199,5 +205,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('90704301'))
+    print(scrape('77946744'))
 # 76709358
