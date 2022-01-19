@@ -206,7 +206,7 @@ def scrape(irnis):
                 for j in range(i+1, int(len(p)/1.5)):
                     tmp = p[j].attrs['class'][0].upper()
                     if tmp.find('MSOLISTPARAGRAPHCXSP') != -1:
-                        t += p[j].text
+                        t += p[j].text + '\n'
                         flag = True
                 if flag:
                     break
