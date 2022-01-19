@@ -1,4 +1,5 @@
 from requests_html import HTMLSession
+import datetime
 
 
 def find(text, element):
@@ -149,14 +150,22 @@ def scrape(irnis):
     for i in trs:
         temp = i.text.split('\n')
         docs.append(temp)
-    docs.sort(key=lambda x: int(x[-1]))
+    for i in docs:
+        temp = i[0].split(' ')
+        month = temp[0][:3]
+        day = temp[1][:2]
+        year = temp[2][:4]
+        i[0] = f'{month} {day} {year}'
+
+    docs.sort(key=lambda x: [datetime.datetime.strptime(
+        x[0], '%b  %d %Y'), int(x[-1])])
     data['Document Date'] = docs[-1][0]
     data['Document Title'] = docs[-1][1]
 
     # Targeting xPath
-    tbody = html.find('tbody#docResultsTbody')
-    td = tbody[0].xpath('//*[@id="docResultsTbody"]/tr[1]/td[3]')
-    print(td[0].text)
+    # tbody = html.find('tbody#docResultsTbody')
+    # td = tbody[0].xpath('//*[@id="docResultsTbody"]/tr[1]/td[3]')
+    # print(td[0].text)
 
     # # Finding First Off Action Outgoing
 
@@ -205,5 +214,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('77946744'))
+    print(scrape('79322750'))
 # 76709358
