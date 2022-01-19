@@ -198,7 +198,8 @@ def scrape(irnis):
         # Finding Summary of Issues:
         elements = html.find('p.MsoNormal')
         for i in range(len(elements)):
-            if elements[i].text.find('SUMMARY OF ISSUES') != -1:
+            temp = elements[i].text.upper()
+            if temp.find('SUMMARY OF ISSUES') != -1:
                 t = ''
                 ol = html.find('ol', first=True)
                 if ol is not None:
@@ -214,5 +215,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79322750'))
+    print(scrape('77946744'))
 # 76709358
