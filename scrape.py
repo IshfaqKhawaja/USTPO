@@ -93,23 +93,22 @@ def scrape(irnis):
     data['Owner Name'] = ''
     data['Legal Entity Type'] = ''
     data['Owner Address'] = ''
+    if len(ownerInfo) > 0:
+        elements = ownerInfo[0].find('div.single.table')
+        for i in elements:
+            temp = i.text
+            if temp.find('Owner Name:') != -1:
+                data['Owner Name'] = ' '.join(temp.split('\n')[1:])
+                continue
+            if temp.find('Owner Address:') != -1:
+                data['Owner Address'] = '\n'.join(temp.split('\n')[1:])
 
-    elements = ownerInfo[0].find('div.single.table')
-    for i in elements:
-        temp = i.text
-        if temp.find('Owner Name:') != -1:
-            data['Owner Name'] = ' '.join(temp.split('\n')[1:])
-            continue
-        if temp.find('Owner Address:') != -1:
-            data['Owner Address'] = '\n'.join(temp.split('\n')[1:])
-            continue
-
-    elements = ownerInfo[0].find('div.double.table')
-    for i in elements:
-        temp = i.text
-        if temp.find('Legal Entity Type:') != -1:
-            data['Legal Entity Type'] = temp.split('\n')[1]
-            break
+        elements = ownerInfo[0].find('div.double.table')
+        for i in elements:
+            temp = i.text
+            if temp.find('Legal Entity Type:') != -1:
+                data['Legal Entity Type'] = temp.split('\n')[1]
+                break
     # Finding Email and Phone Number:
     sections = html.find('div.expand_wrapper.default_hide')
     index = -1
@@ -117,24 +116,25 @@ def scrape(irnis):
         if sections[i].text.find('Attorney/Correspondence Information') != -1:
             index = i
             break
-    correspondence = sections[i]
-    data['Correspondent Name/Address'] = ''
-    data['Phone No'] = ''
-    data['Email'] = ''
-    info = correspondence.find('div.single.table')
-    for i in info:
-        temp = i.text
-        if temp.find('Correspondent Name/Address:') != -1:
-            data['Correspondent Name/Address'] = '\n'.join(
-                temp.split('\n')[1:])
-            break
-    info = correspondence.find('div.double.table')
-    for i in info:
-        temp = i.text
-        if temp.find('Phone:') != -1:
-            data['Phone No'] = ''.join(temp.split('\n')[1])
-        if temp.find('Correspondent e-mail:') != -1:
-            data['Email'] = ''.join(temp.split('\n')[1])
+    if index != -1:
+        correspondence = sections[index]
+        data['Correspondent Name/Address'] = ''
+        data['Phone No'] = ''
+        data['Email'] = ''
+        info = correspondence.find('div.single.table')
+        for i in info:
+            temp = i.text
+            if temp.find('Correspondent Name/Address:') != -1:
+                data['Correspondent Name/Address'] = '\n'.join(
+                    temp.split('\n')[1:])
+                break
+        info = correspondence.find('div.double.table')
+        for i in info:
+            temp = i.text
+            if temp.find('Phone:') != -1:
+                data['Phone No'] = ''.join(temp.split('\n')[1])
+            if temp.find('Correspondent e-mail:') != -1:
+                data['Email'] = ''.join(temp.split('\n')[1])
 
     # END OF FETCHING STATUS RELATED DETAILS:
 
@@ -145,22 +145,23 @@ def scrape(irnis):
     data['Document Title'] = ''
     data['Office  Action Date '] = ''
     tbody = html.find('tbody#docResultsTbody')
-    trs = tbody[0].find('tr.doc_row.dataRowTR')
-    docs = []
-    for i in trs:
-        temp = i.text.split('\n')
-        docs.append(temp)
-    for i in docs:
-        temp = i[0].split(' ')
-        month = temp[0][:3]
-        day = temp[1][:2]
-        year = temp[2][:4]
-        i[0] = f'{month} {day} {year}'
+    if len(tbody) > 0:
+        trs = tbody[0].find('tr.doc_row.dataRowTR')
+        docs = []
+        for i in trs:
+            temp = i.text.split('\n')
+            docs.append(temp)
+        for i in docs:
+            temp = i[0].split(' ')
+            month = temp[0][:3]
+            day = temp[1][:2]
+            year = temp[2][:4]
+            i[0] = f'{month} {day} {year}'
 
-    docs.sort(key=lambda x: [datetime.datetime.strptime(
-        x[0], '%b  %d %Y'), int(x[-1])])
-    data['Document Date'] = docs[-1][0]
-    data['Document Title'] = docs[-1][1]
+        docs.sort(key=lambda x: [datetime.datetime.strptime(
+            x[0], '%b  %d %Y'), int(x[-1])])
+        data['Document Date'] = docs[-1][0]
+        data['Document Title'] = docs[-1][1]
 
     # Targeting xPath
     # tbody = html.find('tbody#docResultsTbody')
@@ -224,5 +225,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79322750'))
+    print(scrape('73169875'))
 # 76709358
