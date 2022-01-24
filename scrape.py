@@ -205,10 +205,13 @@ def scrape(irnis):
                 p = html.find('p')
                 flag = False
                 for j in range(i+1, int(len(p)/1.5)):
-                    tmp = p[j].attrs['class'][0].upper()
-                    if tmp.find('MSOLISTPARAGRAPHCXSP') != -1:
-                        t += p[j].text + '\n'
-                        flag = True
+                    try:
+                        tmp = p[j].attrs['class'][0].upper()
+                        if tmp.find('MSOLISTPARAGRAPHCXSP') != -1:
+                            t += p[j].text + '\n'
+                            flag = True
+                    except:
+                        continue
                 if flag:
                     break
                 ol = html.find('ol', first=True)
@@ -225,5 +228,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('73169875'))
+    print(scrape('79313186'))
 # 76709358
