@@ -135,6 +135,7 @@ def scrape(irnis):
                 data['Phone No'] = ''.join(temp.split('\n')[1])
             if temp.find('Correspondent e-mail:') != -1:
                 data['Email'] = ''.join(temp.split('\n')[1])
+                break
 
     # END OF FETCHING STATUS RELATED DETAILS:
 
@@ -228,5 +229,5 @@ def scrape(irnis):
 
 
 if __name__ == '__main__':
-    print(scrape('79319876'))
+    print(scrape('79130801'))
 # 76709358
